@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.base.dao.DataBaseDao">
+
+    <resultMap id="tableDefinitionMap" type="com.boyoi.core.entity.TableDefinition">
+        <result column="table_type" property="tableType"/>
+        <result column="name" property="name"/>
+        <result column="comment" property="comment"/>
+        <result column="link" property="link"/>
+    </resultMap>
+
+    <resultMap id="columnDefinitionMap" type="com.boyoi.core.entity.ColumnDefinition">
+        <result column="comment" property="comment"/>
+        <result column="name" property="name"/>
+        <result column="nullable" property="nullable"/>
+        <result column="ddl_type" property="ddlType"/>
+    </resultMap>
+
+    <!--查询表是否存在-->
+    <select id="isExistTable" resultType="string">
+        select table_name as exist from information_schema.tables where table_schema=#{type} and
+        table_name=#{tableName};
+    </select>
+    <!--根据条件获取表-->
+    <select id="findByGridRequest" resultMap="tableDefinitionMap">
+        select upper(schemaname) as table_type, relname as name, obj_description(relid) as comment,
+        (select A.link_id from
+        dl_link_table A where A.type='D' and A.copy_table_name = tablealins.relname) as link
+        from pg_stat_user_tables tablealins
+        <where>
+            <foreach item="item" index="key" collection="map2" open="" separator=" AND " close="">
+                <if test="key=='name'">relname ilike '%${item}%'</if>
+                <if test="key=='type'">schemaname = #{item}</if>
+                <if test="key=='comment'">obj_description(relid) ilike '%${item}%'</if>
+                <if test="key=='link'">schemaname = 'db' and relname in (select copy_table_name from dl_link_table B
+                    where
+                    B.type='D' and B.link_id = #{item})
+                </if>
+            </foreach>
+        </where>
+
+    </select>
+
+    <!--获取模式下的所有表-->
+    <select id="getTables" resultMap="tableDefinitionMap">
+        select upper(schemaname) as table_type, relname as name, obj_description(relid) as comment
+        from pg_stat_user_tables
+        where schemaname = #{name}
+    </select>
+    <!--获取一个表-->
+    <select id="getTable" resultMap="tableDefinitionMap">
+        select upper(schemaname) as table_type, relname as name, obj_description(relid) as comment
+        from pg_stat_user_tables
+        where schemaname = #{tableType.name}
+        AND relname = #{name}
+    </select>
+
+    <!--获取的所有列-->
+    <select id="getColumns" resultMap="columnDefinitionMap">
+        select col_description(a.attrelid, a.attnum) as comment,
+        a.attname as name,
+        not a.attnotnull as nullable,
+        concat_ws('', pg_type.typname, substring(format_type(a.atttypid, a.atttypmod) from '\(.*\)')) as ddl_type
+        from pg_stat_user_tables as c,
+        pg_attribute as a
+        inner join pg_type on pg_type.oid = a.atttypid
+        where c.relname = #{name}
+        and c.schemaname = #{tableType.name}
+        and a.attrelid = c.relid
+        and a.attnum > 0
+    </select>
+
+    <!--获取id名称集合-->
+    <select id="getPks" parameterType="com.boyoi.core.entity.TableDefinition" resultType="string">
+        select pg_attribute.attname as name
+        from pg_constraint
+        inner join pg_stat_user_tables on pg_constraint.conrelid = pg_stat_user_tables.relid
+        inner join pg_attribute on pg_attribute.attrelid = pg_stat_user_tables.relid
+        and pg_attribute.attnum = any (pg_constraint.conkey)
+        inner join pg_type on pg_type.oid = pg_attribute.atttypid
+        where pg_stat_user_tables.relname = #{name}
+        and pg_stat_user_tables.schemaname = #{tableType.name}
+        and pg_constraint.contype = 'p'
+    </select>
+    <select id="showData" resultType="java.util.Map">
+        select * from
+        <if test='null != map2.type and ""!=map2.type'>
+            "${map2.type}".
+        </if>"${map2.name}"
+    </select>
+
+    <!--创建表-->
+    <update id="createTable" parameterType="com.boyoi.core.entity.TableDefinition">
+        create table
+        <if test='null != tableType'>
+            "${tableType.name}".
+        </if>"${name}"
+        <foreach collection="columnDefinitions" item="item" index="index" open=" ( " separator=" , " close=" ) ">
+            "${item.name}" ${item.ddlType}
+            <if test='null != item.nullable and !item.nullable'>
+                not null
+            </if>
+        </foreach>
+    </update>
+
+    <!--给已有的表增加新的字段-->
+    <update id="addField" parameterType="com.boyoi.core.entity.TableDefinition">
+        <foreach collection="columnDefinitions" item="item" index="index" separator=";" close=";">
+            alter table "${tableType.name}"."${name}" add "${item.name}" ${item.ddlType} default null
+        </foreach>
+    </update>
+
+    <!--为表和列添加注释-->
+    <update id="comment" parameterType="com.boyoi.core.entity.TableDefinition">
+        /*判断表注释是否为空*/
+        <if test='null != comment and "" != comment'>
+            /*添加表注释*/
+            comment on table
+            /*判断是否有模式名*/
+            <if test='null != tableType'>
+                "${tableType.name}".
+            </if>"${name}" is '${comment}';
+        </if>
+        /*判断列集合是否为空*/
+        <if test='null != columnDefinitions'>
+            /*遍历列集合*/
+            <foreach collection="columnDefinitions" item="item" index="index" open="" separator=";" close="">
+                /*判断列注释是否为空*/
+                <if test='null != item.comment and "" != item.comment'>
+                    /*添加列注释*/
+                    comment on column
+                    /*判断是否有模式名*/
+                    <if test='null != tableType'>
+                        "${tableType.name}".
+                    </if>"${name}"."${item.name}" is '${item.comment}'
+                </if>
+            </foreach>
+        </if>
+    </update>
+    <!--添加主键-->
+    <update id="addPk" parameterType="com.boyoi.core.entity.TableDefinition">
+        <if test='null != pks'>
+            alter table
+            <if test='null != tableType'>
+                "${tableType.name}".
+            </if>"${name}"
+            add constraint "${name}_pkey" primary key
+            <foreach collection="pks" item="item" index="index" open=" ( " separator=" , " close=" ) ">
+                "${item.name}"
+            </foreach>
+        </if>
+    </update>
+    <!--删除主键-->
+    <update id="delPk" parameterType="com.boyoi.core.entity.TableDefinition">
+        alter table
+        <if test='null != tableType'>
+            "${tableType.name}".
+        </if>"${name}"
+        drop constraint "${name}_pkey"
+    </update>
+
+    <!--批量插入-->
+    <update id="batchInsert">
+        insert into
+        <if test='null != tableDefinition.tableType'>
+            "${tableDefinition.tableType.name}".
+        </if>"${tableDefinition.name}"
+        <foreach item="column" collection="tableDefinition.columnVos" open=" ( " separator=" , " close=" ) ">
+            "${column.name}"
+        </foreach>
+        values
+        <foreach item="row" collection="list" open=" " separator=" , " close=" ">
+            <foreach item="data" collection="row" open=" ( " separator=" , " close=" ) ">
+                #{data}
+            </foreach>
+        </foreach>
+    </update>
+
+    <!--单条插入-->
+    <update id="insert">
+        insert into
+        <if test='null != tableDefinition.tableType'>
+            "${tableDefinition.tableType.name}".
+        </if>"${tableDefinition.name}"
+        <foreach item="column" collection="tableDefinition.columnVos" open=" ( " separator=" , " close=" ) ">
+            "${column.name}"
+        </foreach>
+        values
+        <foreach item="data" collection="row" open=" ( " separator=" , " close=" ) ">
+            #{data}
+        </foreach>
+    </update>
+
+    <!--根据字段更新-->
+    <update id="update">
+        update "${tableType.name}"."${name}"
+        set
+        <foreach collection="map.entrySet()" item="item" separator=",">
+            ${item.key} = #{item.value}
+        </foreach>
+        where ${key} = #{value}
+    </update>
+
+    <!--根据字段删除-->
+    <delete id="delByKey">
+        delete
+        from "${tableType.name}"."${name}"
+        where ${key}=#{value}
+    </delete>
+
+    <!--获取一个表数据量-->
+    <select id="getNum" resultType="java.util.Map">
+        select * from
+        <if test='null != tableType'>
+            "${tableType.type}".
+        </if>"${name}" limit 10
+    </select>
+
+    <!--根据某一个值去获取数据-->
+    <select id="findByGuid" resultType="hashmap">
+        select *
+        from "${tableType.name}"."${tableName}"
+        where ${key1}=#{value1}
+    </select>
+
+    <!--去某一张表查询相关数据-->
+    <select id="findDataFromTemplate" resultType="hashmap">
+        select * from "${tableType.name}"."${name}" tableAlins
+        <where>
+            <foreach collection="gridRequest.map2" item="item" index="key" open="" separator=" AND" close="">
+                <if test=' null != key and "" != key'>
+                    tableAlins.${key} ilike '%${item}%'
+                </if>
+            </foreach>
+        </where>
+    </select>
+</mapper>

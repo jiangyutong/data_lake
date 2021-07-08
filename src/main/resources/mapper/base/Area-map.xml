@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.base.dao.AreaDao">
+
+    <resultMap id="areaMap" type="com.boyoi.core.entity.Area">
+        <id column="area_id" property="areaId"/>
+        <result column="area_name" property="areaName"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="levels" property="levels"/>
+        <collection property="childrens" ofType="com.boyoi.core.entity.Area">
+            <result column="areaId2" property="areaId"/>
+            <result column="areaName2" property="areaName"/>
+            <collection property="childrens" ofType="com.boyoi.core.entity.Area">
+                <result column="areaId3" property="areaId"/>
+                <result column="areaName3" property="areaName"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+
+    <!-- 添加 -->
+    <insert id="add" parameterType="com.boyoi.core.entity.Area">
+        insert into tsys_area
+        (area_id,area_name,parent_id,levels)
+        values
+        (#{areaId},#{areaName},#{parentId},#{levels})
+    </insert>
+
+    <!-- 批量添加 -->
+    <insert id="addBatch" parameterType="List">
+        insert into tsys_area
+        (area_id,area_name,parent_id,levels)
+        values
+        <foreach collection="list" item="area" index="index" separator=",">
+            (#{area.areaId},#{area.areaName},#{area.parentId},#{area.levels})
+        </foreach>
+    </insert>
+
+    <!-- 根据对象值删除 -->
+    <update id="del" parameterType="com.boyoi.core.entity.Area">
+        update tsys_area set is_deleted = 'B'
+        <where>
+            <if test='null != areaId and "" != areaId'>and area_id = #{areaId}</if>
+            <if test='null != areaName and "" != areaName'>and area_name = #{areaName}</if>
+            <if test='null != parentId and "" != parentId'>and parent_id = #{parentId}</if>
+            <if test='null != levels and "" != levels'>and levels = #{levels}</if>
+        </where>
+    </update>
+
+    <!-- 根据ID批量删除 -->
+    <update id="delBatch" parameterType="List">
+        update tsys_area set is_deleted = 'B' where areaId in (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #(item)
+        </foreach>
+        )
+    </update>
+
+    <!-- 修改 -->
+    <update id="update" parameterType="com.boyoi.core.entity.Area">
+        update tsys_area
+        set
+        area_id = #{areaId},
+        area_name = #{areaName},
+        parent_id = #{parentId},
+        levels = #{levels}
+
+        where areaId=#{areaId}
+    </update>
+
+    <!-- 根据对象值修改 -->
+    <update id="updateByNotEmpty" parameterType="com.boyoi.core.entity.Area">
+        update tsys_area
+        <set>
+            <if test='null != areaId and "" != areaId'>area_id = #{areaId},</if>
+            <if test='null != areaName and "" != areaName'>area_name = #{areaName},</if>
+            <if test='null != parentId and "" != parentId'>parent_id = #{parentId},</if>
+            <if test='null != levels and "" != levels'>levels = #{levels}</if>
+        </set>
+        where areaId=#{areaId}
+    </update>
+
+    <!-- 根据主键查询 -->
+    <select id="findById" resultMap="areaMap">
+        select * from tsys_area where areaId=#{areaId}
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="findAll" resultMap="areaMap">
+        select * from tsys_area
+    </select>
+
+    <!-- 根据对象值查询重复个数 -->
+    <select id="findByCheck" resultType="Integer">
+        select count(1) from tsys_area tableAlias
+        <where>
+            <if test='null != areaId and "" != areaId'>and area_id != #{areaId}</if>
+            <if test='null != areaName and "" != areaName'>and area_name = #{areaName}</if>
+            <if test='null != parentId and "" != parentId'>and parent_id = #{parentId}</if>
+            <if test='null != levels and "" != levels'>and levels = #{levels}</if>
+        </where>
+    </select>
+
+    <!-- 根据对象值查询 -->
+    <select id="findByDomain" resultMap="areaMap">
+        select * from tsys_area tableAlias
+        <where>
+            <if test='null != areaId and "" != areaId'>and area_id = #{areaId}</if>
+            <if test='null != areaName and "" != areaName'>and area_name = #{areaName}</if>
+            <if test='null != parentId and "" != parentId'>and parent_id = #{parentId}</if>
+            <if test='null != levels and "" != levels'>and levels = #{levels}</if>
+        </where>
+    </select>
+
+    <!-- 分页查询方法 -->
+    <select id="findByGridRequest" resultMap="areaMap">
+        select
+        *
+        from tsys_area tableAlins
+        <where>
+            <foreach item="item" index="key" collection="map2" open="" separator=" AND " close="">
+                tableAlias.key = item
+            </foreach>
+        </where>
+    </select>
+
+    <!-- 分页查询方法 -->
+    <select id="findProvince" resultType="java.util.HashMap">
+        SELECT area_id AS value, area_name AS label, levels FROM tsys_area WHERE levels = '1' AND parent_id = '100000'
+    </select>
+
+    <select id="findChina" resultMap="areaMap">
+        SELECT area1.*,area2.area_id as areaId2,area2.area_name as areaName2
+        FROM tsys_area area1
+        left join tsys_area area2 on area2.parent_id = area1.area_id
+        left join tsys_area area3 on area3.parent_id = area2.area_id
+        WHERE area1.levels = '1' and area1.parent_id = '100000'
+        order by area1.area_id asc,area2.area_id asc
+    </select>
+
+    <select id="findCitysByParentId" resultType="java.util.HashMap">
+        SELECT area_id AS value, area_name AS label, levels FROM tsys_area WHERE parent_id = #{areaId}
+    </select>
+
+    <select id="findCitysByprovinceId" resultType="java.util.HashMap">
+        SELECT aa.area_id AS value, aa.area_name AS label, aa.levels
+        FROM tsys_area ac
+        join tsys_area aa
+        on ac.area_id = aa.parent_id
+        WHERE ac.parent_id = #{areaId}
+    </select>
+
+    <!--查询所有省份及下属城市-->
+    <select id="getProvinceCity" resultMap="areaMap">
+        SELECT area1.*,area2.area_id as areaId2,area2.area_name as areaName2,area3.area_id as areaId3,area3.area_name as
+        areaName3
+        FROM tsys_area area1
+        left join tsys_area area2 on area2.parent_id = area1.area_id
+        left join tsys_area area3 on area3.parent_id = area2.area_id
+        WHERE area1.levels = '1' and area1.parent_id = '100000'
+        order by area1.area_id asc,area2.area_id asc,area3.area_id asc
+    </select>
+
+    <!--查询所有省份及下属城市-->
+    <select id="getProvinceCity1" resultMap="areaMap">
+        SELECT area1.*,area2.area_id as areaId2,area2.area_name as areaName2
+        FROM tsys_area area1
+        left join tsys_area area2 on area2.parent_id = area1.area_id
+        WHERE area1.levels = '1' and area1.parent_id = '100000'
+        order by area1.area_id asc,area2.area_id asc
+    </select>
+
+</mapper>

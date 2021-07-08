@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.base.dao.RoleDao">
+
+    <resultMap id="roleMap" type="com.boyoi.core.entity.Role">
+        <id column="guid" property="guid"/>
+        <result column="role_name" property="roleName"/>
+        <result column="create_time" property="createTime"/>
+        <result column="opt_time" property="optTime"/>
+        <result column="opt_person" property="optPerson"/>
+        <result column="describe" property="describe"/>
+
+    </resultMap>
+
+    <!-- 添加 -->
+    <insert id="add" parameterType="com.boyoi.core.entity.Role">
+        insert into tsys_role
+        (guid,role_name,create_time,opt_time,opt_person,describe)
+        values
+        (#{guid},#{roleName},#{createTime},#{optTime},#{optPerson},#{describe})
+    </insert>
+
+    <!-- 批量添加 -->
+    <insert id="addBatch" parameterType="List">
+        insert into tsys_role
+        (guid,role_name,create_time,opt_time,opt_person,describe)
+        values
+        <foreach collection="list" item="role" index="index" separator=",">
+            (#{role.guid},#{role.roleName},#{role.createTime},#{role.optTime},#{role.optPerson},#{role.describe})
+        </foreach>
+    </insert>
+
+    <!-- 根据对象值删除 -->
+    <delete id="del" parameterType="com.boyoi.core.entity.Role">
+        delete from tsys_role
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != roleName and "" != roleName'>and role_name = #{roleName}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != describe and "" != describe'>and describe = #{describe}</if>
+        </where>
+    </delete>
+
+    <!-- 根据ID批量删除 -->
+    <update id="delBatch" parameterType="List">
+        update tsys_role set is_deleted = 'B' where guid in (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #(item)
+        </foreach>
+        )
+    </update>
+
+    <!-- 修改 -->
+    <update id="update" parameterType="com.boyoi.core.entity.Role">
+        update tsys_role
+        set
+        guid = #{guid},
+        role_name = #{roleName},
+        create_time = #{createTime},
+        opt_time = #{optTime},
+        opt_person = #{optPerson},
+        describe = #{describe}
+
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据对象值修改 -->
+    <update id="updateByNotEmpty" parameterType="com.boyoi.core.entity.Role">
+        update tsys_role
+        <set>
+            <if test='null != guid and "" != guid'>guid = #{guid},</if>
+            <if test='null != roleName and "" != roleName'>role_name = #{roleName},</if>
+            <if test='null != createTime and "" != createTime'>create_time = #{createTime},</if>
+            <if test='null != optTime '>opt_time = #{optTime},</if>
+            <if test='null != optPerson and "" != optPerson'>opt_person = #{optPerson},</if>
+            <if test='null != describe and "" != describe'>describe = #{describe}</if>
+        </set>
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据主键查询 -->
+    <select id="findById" resultMap="roleMap">
+        select * from tsys_role where guid=#{guid}
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="findAll" resultMap="roleMap">
+        select * from tsys_role order by opt_time desc
+    </select>
+
+    <!-- 根据对象值查询重复个数 -->
+    <select id="findByCheck" resultType="Integer">
+        select count(1) from tsys_role tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid != #{guid}</if>
+            <if test='null != roleName and "" != roleName'>and role_name = #{roleName}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != describe and "" != describe'>and describe = #{describe}</if>
+        </where>
+    </select>
+
+    <!-- 根据对象值查询 -->
+    <select id="findByDomain" resultMap="roleMap">
+        select * from tsys_role tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != roleName and "" != roleName'>and role_name = #{roleName}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != describe and "" != describe'>and describe = #{describe}</if>
+        </where>
+    </select>
+
+    <!-- 分页查询方法 -->
+    <select id="findByGridRequest" resultMap="roleMap">
+        select
+        *
+        from tsys_role tablealins
+        where 1=1
+        <foreach item="item" index="key" collection="map2" open="" separator=" " close="">
+            <if test="key=='roleName'">
+                and tablealins.role_name like '%${item}%'
+            </if>
+            <if test="key=='describe'">
+                and tablealins.describe like '%${item}%'
+            </if>
+            <if test="key=='optPerson'">
+                and tablealins.opt_person like '%${item}%'
+            </if>
+            <if test="key == 'optTimeStrStart'">
+                and tablealins.opt_time &gt;= '${item} 00:00:00'
+            </if>
+            <if test="key == 'optTimeStrEnd'">
+                and tablealins.opt_time &lt;= '${item} 23:59:59'
+            </if>
+            <if test="key == 'createTimeStart'">
+                and tablealins.create_time &gt;= '${item} 00:00:00'
+            </if>
+            <if test="key == 'createTimeEnd'">
+                and tablealins.create_time &lt;= '${item} 23:59:59'
+            </if>
+        </foreach>
+    </select>
+
+    <insert id="addPermission" parameterType="List">
+        insert into tsys_role_permission(guid,role_id,permission_id) values
+        <foreach collection="list" item="role" index="index" separator=",">
+            (#{role.guid},#{role.roleId},#{role.permissionId})
+        </foreach>
+    </insert>
+    <delete id="delPermission" parameterType="String">
+        delete from tsys_role_permission where role_id = #{param1}
+    </delete>
+
+    <select id="findByUser" resultMap="roleMap">
+        select
+        a.*
+        from tsys_role a
+        left join tsys_user_role b
+        on a.guid = b.role_id
+        where b.user_id = #{guid}
+        order by opt_time desc
+    </select>
+</mapper>

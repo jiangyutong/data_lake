@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.work.dao.TemplateTableDao">
+
+    <resultMap id="templateTableMap" type="com.boyoi.work.entity.TemplateTable">
+        <id column="guid" property="guid"/>
+        <result column="template_name" property="templateName"/>
+        <result column="template_column" property="templateColumn"/>
+        <result column="create_time" property="createTime"/>
+        <result column="opt_person" property="optPerson"/>
+        <result column="template_describe" property="templateDescribe"/>
+        <result column="opt_time" property="optTime"/>
+    </resultMap>
+
+    <!-- 添加 -->
+    <insert id="add" parameterType="com.boyoi.work.entity.TemplateTable">
+        insert into template_info
+        (guid, template_name, template_column, create_time, opt_person, template_describe, opt_time, is_del)
+        values (#{guid}, #{templateName}, #{templateColumn}, #{createTime}, #{optPerson}, #{templateDescribe},
+        #{optTime}, #{isDel})
+    </insert>
+
+    <!-- 批量添加 -->
+    <insert id="addBatch" parameterType="List">
+        insert into template_info
+        (guid, template_name, template_column, create_time, opt_person, template_describe, opt_time, is_del)
+        values
+        <foreach collection="list" item="templateTable" index="index" separator=",">
+            (#{templateTable.guid}, #{templateTable.templateName}, #{templateTable.templateColumn},
+            #{templateTable.createTime}, #{templateTable.optPerson}, #{templateTable.templateDescribe},
+            #{templateTable.optTime}, #{templateTable.isDel})
+        </foreach>
+    </insert>
+
+    <!-- 根据对象值删除 -->
+    <update id="del" parameterType="com.boyoi.work.entity.TemplateTable">
+        update template_info
+        set is_del = 'B'
+        where guid = #{guid}
+    </update>
+
+    <!-- 根据ID批量删除 -->
+    <update id="delBatch" parameterType="List">
+        update template_info set is_del = 'B' where guid in (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #{item}
+        </foreach>
+        )
+    </update>
+
+    <!--    &lt;!&ndash; 修改 &ndash;&gt;-->
+    <!--    <update id="update" parameterType="com.boyoi.work.entity.TemplateTable">-->
+    <!--        update template_info-->
+    <!--        set guid            = #{guid},-->
+    <!--            template_name      = #{templateName},-->
+    <!--            template_describe = #{templateDescribe}-->
+    <!--            template_column    = #{templateColumn},-->
+    <!--            opt_time     = #{optTime},-->
+    <!--        where guid = #{guid}-->
+    <!--    </update>-->
+
+    <!-- 根据对象值修改 -->
+    <update id="updateByNotEmpty" parameterType="com.boyoi.work.entity.TemplateTable">
+        update template_info
+        <set>
+            <if test='null != templateName and "" != templateName'>template_name = #{templateName},</if>
+            <if test='null != templateColumn and "" != templateColumn'>template_column = #{templateColumn},</if>
+            <if test='null != templateDescribe and "" != templateDescribe'>template_describe = #{templateDescribe},</if>
+            <if test='null != optTime'>opt_time = #{optTime},</if>
+            <if test='null != optPerson and "" != optPerson'>opt_person = #{optPerson}</if>
+        </set>
+        where guid=#{guid} and is_del='A'
+    </update>
+
+    <!-- 根据主键查询 -->
+    <select id="findById" resultMap="templateTableMap">
+        select *
+        from template_info
+        where guid = #{guid} and is_del = 'A'
+    </select>
+
+    <!-- 根据templateName查询 -->
+    <select id="findByName" resultType="java.lang.String">
+        select column_name
+        from information_schema.columns
+        where table_schema ='template_data' and table_name = #{templateName}
+    </select>
+
+    <select id="findByFields" resultType="java.util.HashMap">
+        select
+        <foreach collection="fieldNames" item="item" index="index" separator="," open="" close="">
+            ${item}
+        </foreach>
+        from template_field_mapper.${templateName} tableAlins
+        where original_table_name = #{original_table}
+
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="findAll" resultMap="templateTableMap">
+        select *
+        from template_info
+        where is_del = 'A'
+    </select>
+
+    <!--    &lt;!&ndash; 根据对象值查询重复个数 &ndash;&gt;-->
+    <!--    <select id="findByCheck" resultType="Integer">-->
+    <!--        select count(1) from dl_link_table tableAlias-->
+    <!--        <where>-->
+    <!--            <if test='null != guid and "" != guid'>and guid != #{guid}</if>-->
+    <!--            <if test='null != tableName and "" != tableName'>and table_name = #{tableName}</if>-->
+    <!--            <if test='null != copyTableName and "" != copyTableName'>and copy_table_name = #{copyTableName}</if>-->
+    <!--            <if test='null != linkId and "" != linkId'>and link_id = #{linkId}</if>-->
+    <!--            <if test='null != type and "" != type'>and type = #{type}</if>-->
+    <!--            <if test='null != tableColumn and "" != tableColumn'>and table_column = #{tableColumn}</if>-->
+    <!--            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>-->
+    <!--            <if test='null != tableComment and "" != tableComment'>and table_comment = #{tableComment}</if>-->
+    <!--        </where>-->
+    <!--    </select>-->
+
+    <!--    &lt;!&ndash; 根据对象值查询 &ndash;&gt;-->
+    <!--    <select id="findByDomain" resultMap="linkTableMap">-->
+    <!--        select * from dl_link_table tableAlias-->
+    <!--        <where>-->
+    <!--            <if test='null != guid and "" != guid'>and guid = #{guid}</if>-->
+    <!--            <if test='null != tableName and "" != tableName'>and table_name = #{tableName}</if>-->
+    <!--            <if test='null != copyTableName and "" != copyTableName'>and copy_table_name = #{copyTableName}</if>-->
+    <!--            <if test='null != linkId and "" != linkId'>and link_id = #{linkId}</if>-->
+    <!--            <if test='null != type and "" != type'>and type = #{type}</if>-->
+    <!--            <if test='null != tableColumn and "" != tableColumn'>and table_column = #{tableColumn}</if>-->
+    <!--            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>-->
+    <!--            <if test='null != tableComment and "" != tableComment'>and table_comment = #{tableComment}</if>-->
+    <!--        </where>-->
+    <!--    </select>-->
+    <!--  获取所有的某个数组表  -->
+    <select id="getAllFiledMapper" resultType="java.util.HashMap">
+        select
+        <foreach collection="fieldNames" item="item" index="index" separator="," open="" close="">
+            ${item}
+        </foreach>
+        from template_field_mapper.${templateName} tableAlins
+        <where>
+            <foreach collection="gridRequest.map2" item="item" index="key" open="" separator="AND" close="">
+                <if test="key=='originalTableName'">
+                    tableAlins.original_table_name ilike '%${item}%'
+                </if>
+                <if test="key=='tableOwner'">
+                    tableAlins.table_owner ilike '%${item}%'
+                </if>
+                <if test="key=='tableType'">
+                    tableAlins.table_type = '${item}'
+                </if>
+            </foreach>
+        </where>
+    </select>
+
+    <!-- 分页查询方法 -->
+    <select id="findByGridRequest" resultMap="templateTableMap">
+        select
+        *
+        from template_info tableAlins
+        <where>
+            tableAlins.is_del = 'A'
+            <foreach item="item" index="key" collection="map2" open=" AND " separator=" AND " close="">
+                <if test="key=='templateName'">
+                    tableAlins.template_name ilike '%${item}%'
+                </if>
+                <if test="key=='tableColumn'">
+                    tableAlins.template_column ilike '%${item}%'
+                </if>
+                <if test="key=='optPerson'">
+                    tableAlins.opt_person ilike '%${item}%'
+                </if>
+                <if test="key=='templateDescribe'">
+                    tableAlins.template_describe ilike '%${templateDescribe}%'
+                </if>
+                <if test="key == 'createTimeStart'">
+                    tablealins.create_time &gt;= '${item} 00:00:00'
+                </if>
+                <if test="key == 'createTimeEnd'">
+                    tablealins.create_time &lt;= '${item} 23:59:59'
+                </if>
+                <if test="key == 'optTimeStart'">
+                    tablealins.opt_time &gt;= '${item} 00:00:00'
+                </if>
+                <if test="key == 'optTimeEnd'">
+                    tablealins.opt_time &lt;= '${item} 23:59:59'
+                </if>
+            </foreach>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,156 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /
+    encoding:
+      force: true
+      charset: UTF-8
+      enabled: true
+spring:
+  redis:
+    database: 1
+    host: 127.0.0.1
+    port: 6379
+    password:      # 密码（默认为空）
+    timeout: 6000ms  # 连接超时时长（毫秒）
+    lettuce:
+      pool:
+        max-active: 1000  # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1ms      # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 10      # 连接池中的最大空闲连接 47.99.107.238
+        min-idle: 5       # 连接池中的最小空闲连接 47.111.5.166
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://122.112.165.39:5432/postgres?useUnicode=true&characterEncoding=utf8&useSSL=true&allowMultiQueries=true&verifyServerCertificate=false&useTimezone=true&serverTimezone=GMT%2B8&stringtype=unspecified
+    username: datalake
+    password: boyoi@2020
+    type: com.alibaba.druid.pool.DruidDataSource
+    # 连接池的配置信息
+    # 初始化大小，最小，最大
+    druid:
+      # 初始化大小，最小，最大
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      # 配置获取连接等待超时的时间
+      max-wait: 60000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位毫秒
+      time-between-eviction-runs-millis: 60000
+      # 配置一个连接在池中最小生存时间
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 'x'
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      # 打开 PSCache，并且指定每个连接上 PSCache 的大小
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      # 配置监控统计拦截的 Filter，去掉后监控界面 SQL 无法统计，wall 用于防火墙
+      filters: stat
+      # 通过 connection-properties 属性打开 mergeSql 功能；慢 SQL 记录
+      connection-properties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
+      # 配置 DruidStatFilter
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: .js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*
+      # 配置 DruidStatViewServlet
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        # IP 白名单，没有配置或者为空，则允许所有访问
+        allow: 127.0.0.1
+        # IP 黑名单，若白名单也存在，则优先使用
+        #deny: 192.168.31.253
+        # 禁用 HTML 中 Reset All 按钮
+        reset-enable: false
+        # 登录用户名/密码
+        login-username: root
+        login-password: root
+  mvc:
+    throw-exception-if-no-handler-found: true
+    main:
+      allow-bean-definition-overriding: true
+    devtools:
+      restart:
+        enabled: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  freemarker:
+    checkTemplateLocation: false
+  servlet:
+    multipart:
+      maxFileSize: 5000MB
+      maxRequestSize: 5000MB
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+    # 发送者开启 confirm 确认机制
+    publisher-confirm-type: correlated
+    # 发送者开启 return 确认机制
+    publisher-returns: true
+    ####################################################
+    # 设置消费端手动 ack
+    listener:
+      simple:
+        acknowledge-mode: manual
+        # 是否支持重试
+        retry.enabled: true
+mybatis:
+  typeAliasesPackage: com.boyoi.core.entity
+  mapperLocations: classpath*:mapper/**/*-map.xml
+  # 驼峰命名规范
+  configuration:
+    map-underscore-to-camel-case: true
+#pagehelper
+pagehelper:
+  helperDialect: POSTGRESQL
+  reasonable: false  # 禁用分页参数合理化
+  supportMethodsArguments: true
+  params: count=countSql
+logging:
+  level:
+    com.zaxxer.hikari.pool.ProxyConnection: OFF
+    com.boyoi.work.dao: debug
+    com.boyoi.base.dao: debug
+# 加载所有的端点/默认只加载了 info / health
+management:
+  endpoints:
+    web:
+      exposure:
+        # 比较重要,默认 /actuator spring-boot-admin 扫描不到
+        include: '*'
+  endpoint:
+    shutdown:
+      enabled: false
+    health:
+      show-details: always
+ftp:
+  host: 47.96.161.125
+  port: 21
+  userName: ftpuser
+  password: boyoi@2019
+  path: "/home/ftpuser/files"
+
+#跨域加载项
+allowedOrigin: '*'
+
+#自定义参数
+token:
+  #token失效时间(秒) 当前7天
+  expires: 2592000
+  #更新令牌过期时间(秒) 当前30天
+  refresh: 2592000
+appid: wxb6c146fa8861c8c8
+secret: 5190afae090613c19438382eefed9ca6
+baidu:
+  appid: 20765050
+  key: 2qLEkaG3frca01B6t14PI5jo
+  secret: IKfVf9d6roSr2bxagBvSAQAGehaB9Bd0
+
+  #定时器开关
+timerSwitch: false
+

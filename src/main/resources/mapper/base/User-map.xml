@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.base.dao.UserDao">
+    <resultMap id="userMap" type="com.boyoi.core.entity.User">
+        <id column="guid" property="guid"/>
+        <result column="user_name" property="userName"/>
+        <result column="telephone" property="telephone"/>
+        <result column="password" property="password"/>
+        <result column="photo" property="photo"/>
+        <result column="remark" property="remark"/>
+        <result column="is_enable" property="isEnable"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="gender" property="gender"/>
+        <result column="type" property="type"/>
+        <result column="opt_person" property="optPerson"/>
+        <result column="opt_time" property="optTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="dept_id" property="deptId"/>
+        <collection property="roles" ofType="com.boyoi.core.entity.Role">
+            <result column="role_name" property="roleName"/>
+        </collection>
+    </resultMap>
+
+    <!-- 添加 -->
+    <insert id="add" parameterType="com.boyoi.core.entity.User">
+        insert into tsys_user
+        (guid,user_name,telephone,password,photo,remark,is_enable,is_deleted,gender,type,opt_person,opt_time,create_time,dept_id)
+        values
+        (#{guid},#{userName},#{telephone},#{password},#{photo},#{remark},#{isEnable},#{isDeleted},#{gender},#{type},#{optPerson},#{optTime},#{createTime},#{deptId})
+    </insert>
+
+    <!-- 批量添加 -->
+    <insert id="addBatch" parameterType="List">
+        insert into tsys_user
+        (guid,user_name,telephone,password,photo,remark,is_enable,is_deleted,gender,type,opt_person,opt_time,create_time,dept_id)
+        values
+        <foreach collection="list" item="user" index="index" separator=",">
+            (#{user.guid},#{user.userName},#{user.telephone},#{user.password},#{user.photo},#{user.remark},#{user.isEnable},#{user.isDeleted},#{user.gender},#{user.type},#{user.optPerson},#{user.optTime},#{user.createTime},#{user.deptId})
+        </foreach>
+    </insert>
+
+    <!-- 根据对象值删除 -->
+    <update id="del" parameterType="com.boyoi.core.entity.User">
+        update tsys_user set is_deleted = '1'
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != userName and "" != userName'>and user_name = #{userName}</if>
+            <if test='null != telephone and "" != telephone'>and telephone = #{telephone}</if>
+            <if test='null != password and "" != password'>and password = #{password}</if>
+            <if test='null != photo and "" != photo'>and photo = #{photo}</if>
+            <if test='null != remark and "" != remark'>and remark = #{remark}</if>
+            <if test='null != isEnable and "" != isEnable'>and is_enable = #{isEnable}</if>
+            <if test='null != isDeleted and "" != isDeleted'>and is_deleted = #{isDeleted}</if>
+            <if test='null != gender and "" != gender'>and gender = #{gender}</if>
+            <if test='null != type and "" != type'>and type = #{type}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != deptId and "" != deptId'>and dept_id = #{deptId}</if>
+        </where>
+    </update>
+
+    <!-- 根据ID批量删除 -->
+    <update id="delBatch" parameterType="List">
+        update tsys_user set is_deleted = 'B' where guid in (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #(item)
+        </foreach>
+        )
+    </update>
+
+    <!-- 修改 -->
+    <update id="update" parameterType="com.boyoi.core.entity.User">
+        update tsys_user
+        set
+        guid = #{guid},
+        user_name = #{userName},
+        telephone = #{telephone},
+        password = #{password},
+        photo = #{photo},
+        remark = #{remark},
+        is_enable = #{isEnable},
+        is_deleted = #{isDeleted},
+        gender = #{gender},
+        type = #{type},
+        opt_person = #{optPerson},
+        opt_time = #{optTime},
+        create_time = #{createTime},
+        dept_id = #{deptId}
+
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据对象值修改 -->
+    <update id="updateByNotEmpty" parameterType="com.boyoi.core.entity.User">
+        update tsys_user
+        <set>
+            <if test='null != guid and "" != guid'>guid = #{guid},</if>
+            <if test='null != userName and "" != userName'>user_name = #{userName},</if>
+            <if test='null != telephone and "" != telephone'>telephone = #{telephone},</if>
+            <if test='null != password and "" != password'>password = #{password},</if>
+            <if test='null != photo and "" != photo'>photo = #{photo},</if>
+            <if test='null != remark and "" != remark'>remark = #{remark},</if>
+            <if test='null != isEnable'>is_enable = #{isEnable},</if>
+            <if test='null != isDeleted'>is_deleted = #{isDeleted},</if>
+            <if test='null != gender'>gender = #{gender},</if>
+            <if test='null != type'>type = #{type},</if>
+            <if test='null != optPerson and "" != optPerson'>opt_person = #{optPerson},</if>
+            <if test='null != optTime'>opt_time = #{optTime},</if>
+            <if test='null != createTime'>create_time = #{createTime},</if>
+            <if test='null != deptId and "" != deptId'>dept_id = #{deptId}</if>
+        </set>
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据主键查询 -->
+    <select id="findById" resultMap="userMap">
+        select * from tsys_user where guid=#{guid}
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="findAll" resultMap="userMap">
+        select * from tsys_user
+    </select>
+
+    <!-- 根据对象值查询重复个数 -->
+    <select id="findByCheck" resultType="Integer">
+        select count(1) from tsys_user tableAlias
+        where is_deleted='0'
+        <if test='null != guid and "" != guid'>and guid != #{guid}</if>
+        <if test='null != userName and "" != userName'>and user_name = #{userName}</if>
+        <if test='null != telephone and "" != telephone'>and telephone = #{telephone}</if>
+        <if test='null != password and "" != password'>and password = #{password}</if>
+        <if test='null != photo and "" != photo'>and photo = #{photo}</if>
+        <if test='null != remark and "" != remark'>and remark = #{remark}</if>
+        <if test='null != isEnable and "" != isEnable'>and is_enable = #{isEnable}</if>
+        <if test='null != isDeleted and "" != isDeleted'>and is_deleted = #{isDeleted}</if>
+        <if test='null != gender and "" != gender'>and gender = #{gender}</if>
+        <if test='null != type and "" != type'>and type = #{type}</if>
+        <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+        <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+        <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+        <if test='null != deptId and "" != deptId'>and dept_id = #{deptId}</if>
+    </select>
+
+    <!-- 根据对象值查询 -->
+    <select id="findByDomain" resultMap="userMap">
+        select * from tsys_user tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != userName and "" != userName'>and user_name = #{userName}</if>
+            <if test='null != telephone and "" != telephone'>and telephone = #{telephone}</if>
+            <if test='null != password and "" != password'>and password = #{password}</if>
+            <if test='null != photo and "" != photo'>and photo = #{photo}</if>
+            <if test='null != remark and "" != remark'>and remark = #{remark}</if>
+            <if test='null != isEnable and "" != isEnable'>and is_enable = #{isEnable}</if>
+            <if test='null != isDeleted and "" != isDeleted'>and is_deleted = #{isDeleted}</if>
+            <if test='null != gender and "" != gender'>and gender = #{gender}</if>
+            <if test='null != type and "" != type'>and type = #{type}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != deptId and "" != deptId'>and dept_id = #{deptId}</if>
+        </where>
+    </select>
+
+    <!-- 分页查询方法 -->
+    <select id="findByGridRequest" resultMap="userMap">
+        select
+        tablealins.*
+        from tsys_user tablealins
+        where is_deleted='0'
+        <foreach item="item" index="key" collection="map2" open="" separator="  " close="">
+            <if test="key=='deptId'">
+                and tablealins.dept_id = #{item}
+            </if>
+            <if test="key=='userName'">
+                and tablealins.user_name ilike '%${item}%'
+            </if>
+            <if test="key=='telephone'">
+                and tablealins.telephone ilike '%${item}%'
+            </if>
+            <if test="key=='gender'">
+                and tablealins.gender = cast(#{item} as smallint)
+            </if>
+            <if test="key=='isEnable'">
+                and tablealins.is_enable = cast(#{item} as smallint)
+            </if>
+            <if test="key=='type'">
+                and tablealins.type = cast(#{item} as smallint)
+            </if>
+            <if test="key=='remark'">
+                and tablealins.remark ilike '%${item}%'
+            </if>
+            <if test="key=='optPerson'">
+                and tablealins.opt_person ilike '%${item}%'
+            </if>
+            <if test="key == 'optTimeStrStart'">
+                and tablealins.opt_time &gt;= '${item} 00:00:00'
+            </if>
+            <if test="key == 'optTimeStrEnd'">
+                and tablealins.opt_time &lt;= '${item} 23:59:59'
+            </if>
+            <if test="key == 'createTimeStart'">
+                and tablealins.create_time &gt;= '${item} 00:00:00'
+            </if>
+            <if test="key == 'createTimeEnd'">
+                and tablealins.create_time &lt;= '${item} 23:59:59'
+            </if>
+        </foreach>
+    </select>
+
+    <insert id="addRoleToUser" parameterType="List">
+        insert into tsys_user_role
+        (guid,user_id,role_id)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.guid},#{item.userId},#{item.roleId})
+        </foreach>
+    </insert>
+
+    <insert id="addPermissionToUser" parameterType="List">
+        insert into tsys_user_permission
+        (guid,user_id,permission_id)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.guid},#{item.userId},#{item.permissionId})
+        </foreach>
+    </insert>
+
+    <insert id="addSupplierToUser" parameterType="List">
+        insert into tsys_user_supplier
+        (guid,user_id,supplier_id)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.guid},#{item.userId},#{item.supplierId})
+        </foreach>
+    </insert>
+
+    <delete id="delRoleToUser">
+        delete from tsys_user_role where user_id = #{guid}
+    </delete>
+
+    <delete id="delPermissionToUser">
+        delete from tsys_user_permission where user_id = #{guid}
+    </delete>
+
+    <delete id="delSupplierToUser">
+        delete from tsys_user_supplier where user_id = #{guid}
+    </delete>
+
+    <select id="login" resultMap="userMap">
+        select * from tsys_user where is_deleted='0' and telephone = #{telephone}
+    </select>
+</mapper>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.work.dao.NewWriteApiDao">
+
+    <resultMap id="newWriteApiMap" type="com.boyoi.work.entity.NewWriteApi">
+        <id column="guid" property="guid"/>
+        <result column="template_guid" property="templateGuid"/>
+        <result column="table_guid" property="tableGuid"/>
+        <result column="mapper_guid" property="mapperGuid"/>
+        <result column="template_name" property="templateName"/>
+        <result column="table_name" property="tableName"/>
+        <result column="api_url" property="apiUrl"/>
+        <result column="api_name" property="apiName"/>
+        <result column="table_type" property="tableType"/>
+        <result column="state" property="state"/>
+        <result column="create_time" property="createTime"/>
+        <result column="opt_person" property="optPerson"/>
+        <result column="opt_time" property="optTime"/>
+    </resultMap>
+
+    <!-- 添加 -->
+    <insert id="add" parameterType="com.boyoi.work.entity.NewWriteApi">
+        insert into new_api_write
+        (guid, template_guid, table_guid, mapper_guid, template_name, table_name, api_url, api_name, table_type, state,
+        create_time, opt_person, opt_time)
+        values (#{guid}, #{templateGuid}, #{tableGuid}, #{mapperGuid}, #{templateName}, #{tableName}, #{apiUrl},
+        #{apiName},
+        #{tableType}, #{state}, #{createTime}, #{optPerson}, #{optTime})
+    </insert>
+
+    <!--分页查询-->
+    <select id="findByGridRequest" resultMap="newWriteApiMap">
+        select * from new_api_write tableAlins
+        <where>
+            <foreach collection="map2" item="item" index="key" open="" separator=" AND" close="">
+                <if test="key=='apiUrl'">
+                    tableAlins.api_url ilike '%${item}%'
+                </if>
+                <if test="key=='optPerson'">
+                    tableAlins.opt_person ilike '%${item}%'
+                </if>
+                <if test="key=='apiName'">
+                    tableAlins.api_name ilike '%${item}%'
+                </if>
+                <if test="key=='state'">
+                    tableAlins.state = #{item}
+                </if>
+                <if test="key=='tableName'">
+                    tableAlins.table_name ilike '%${item}%'
+                </if>
+                <if test="key=='tableType'">
+                    tableAlins.table_type = #{item}
+                </if>
+                <if test="key=='templateName'">
+                    tableAlins.template_name ilike '%${item}%'
+                </if>
+                <!--                <if test="key=='createUser'">-->
+                <!--                    tableAlins.create_user = #{item}-->
+                <!--                </if>-->
+                <if test="key == 'createTimeStart'">
+                    tablealins.create_time &gt;= '${item} 00:00:00'
+                </if>
+                <if test="key == 'createTimeEnd'">
+                    tablealins.create_time &lt;= '${item} 23:59:59'
+                </if>
+                <if test="key == 'optTimeStrStart'">
+                    tablealins.opt_time &gt;= '${item} 00:00:00'
+                </if>
+                <if test="key == 'optTimeStrEnd'">
+                    tablealins.opt_time &lt;= '${item} 23:59:59'
+                </if>
+            </foreach>
+        </where>
+    </select>
+
+    <!-- 根据对象值修改 -->
+    <update id="updateByNotEmpty" parameterType="com.boyoi.work.entity.NewWriteApi">
+        update new_api_write
+        <set>
+            <if test='null != templateGuid and "" != templateGuid'>template_guid = #{templateGuid},</if>
+            <if test='null != templateName and "" != templateName'>template_name = #{templateName},</if>
+            <if test='null != tableGuid and "" != tableGuid'>table_guid = #{tableGuid},</if>
+            <if test='null != tableName and "" != tableName'>table_name = #{tableName},</if>
+            <if test='null != apiUrl and "" != apiUrl'>api_url = #{apiUrl},</if>
+            <if test='null != apiName and "" != apiName'>api_name = #{apiName},</if>
+            <if test='null != tableType'>table_type = #{tableType},</if>
+            <if test='null != state and "" != state'>state = #{state},</if>
+            <if test='null != optTime'>opt_time = #{optTime},</if>
+            <if test='null != optPerson and "" != optPerson'>opt_person = #{optPerson},</if>
+        </set>
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据主键查询 -->
+    <select id="findById" resultMap="newWriteApiMap">
+        select *
+        from new_api_write
+        where guid = #{guid}
+    </select>
+
+    <!--查询有效的api接口-->
+    <select id="findValidList" resultMap="newWriteApiMap">
+        select *
+        from new_api_write
+        where state='1'
+    </select>
+
+    <!--根据url和用户uuid来查找接口-->
+    <select id="findByUrl" resultMap="newWriteApiMap">
+        select *
+        from new_api_write
+        where api_url=#{apiUrl}
+        and opt_person=#{createUser}
+    </select>
+</mapper>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.work.dao.LinkTableDao">
+
+    <resultMap id="linkTableMap" type="com.boyoi.work.entity.LinkTable">
+        <id column="guid" property="guid"/>
+        <result column="table_name" property="tableName"/>
+        <result column="copy_table_name" property="copyTableName"/>
+        <result column="link_id" property="linkId"/>
+        <result column="type" property="type"/>
+        <result column="table_column" property="tableColumn"/>
+        <result column="create_time" property="createTime"/>
+        <result column="opt_person" property="optPerson"/>
+        <result column="table_comment" property="tableComment"/>
+        <result column="opt_time" property="optTime"/>
+
+    </resultMap>
+
+    <!-- 添加 -->
+    <insert id="add" parameterType="com.boyoi.work.entity.LinkTable">
+        insert into dl_link_table
+        (guid, table_name, copy_table_name, link_id, type, table_column, create_time, opt_person, table_comment,
+        opt_time)
+        values (#{guid}, #{tableName}, #{copyTableName}, #{linkId}, #{type}, #{tableColumn}, #{createTime},
+        #{optPerson},#{tableComment},#{optTime})
+    </insert>
+
+    <!-- 批量添加 -->
+    <insert id="addBatch" parameterType="List">
+        insert into dl_link_table
+        (guid,table_name,copy_table_name,link_id,type,table_column,create_time,opt_person,table_comment)
+        values
+        <foreach collection="list" item="linkTable" index="index" separator=",">
+            (#{linkTable.guid},#{linkTable.tableName},#{linkTable.copyTableName},#{linkTable.linkId},#{linkTable.type},#{linkTable.tableColumn},#{linkTable.createTime},#{linkTable.optPerson},#{linkTable.tableComment})
+        </foreach>
+    </insert>
+
+    <!-- 根据对象值删除 -->
+    <update id="del" parameterType="com.boyoi.work.entity.LinkTable">
+        delete from dl_link_table
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != tableName and "" != tableName'>and table_name = #{tableName}</if>
+            <if test='null != copyTableName and "" != copyTableName'>and copy_table_name = #{copyTableName}</if>
+            <if test='null != linkId and "" != linkId'>and link_id = #{linkId}</if>
+            <if test='null != type and "" != type'>and type = #{type}</if>
+            <if test='null != tableColumn and "" != tableColumn'>and table_column = #{tableColumn}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != tableComment and "" != tableComment'>and table_comment = #{tableComment}</if>
+        </where>
+    </update>
+
+    <!-- 根据ID批量删除 -->
+    <update id="delBatch" parameterType="List">
+        update dl_link_table set is_deleted = 'B' where guid in (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #(item)
+        </foreach>
+        )
+    </update>
+
+    <!-- 修改 -->
+    <update id="update" parameterType="com.boyoi.work.entity.LinkTable">
+        update dl_link_table
+        set guid = #{guid},
+        table_name = #{tableName},
+        copy_table_name = #{copyTableName},
+        link_id = #{linkId},
+        type = #{type},
+        table_column = #{tableColumn},
+        create_time = #{createTime},
+        table_comment = #{tableComment}
+
+        where guid = #{guid}
+    </update>
+
+    <!-- 根据对象值修改 -->
+    <update id="updateByNotEmpty" parameterType="com.boyoi.work.entity.LinkTable">
+        update dl_link_table
+        <set>
+            <if test='null != tableName and "" != tableName'>table_name = #{tableName},</if>
+            <if test='null != copyTableName and "" != copyTableName'>copy_table_name = #{copyTableName},</if>
+            <if test='null != linkId and "" != linkId'>link_id = #{linkId},</if>
+            <if test='null != type and "" != type'>type = #{type},</if>
+            <if test='null != tableColumn and "" != tableColumn'>table_column = #{tableColumn},</if>
+            <if test='null != createTime '>create_time = #{createTime}</if>
+            <if test='null != tableComment and "" != tableComment'>table_comment = #{tableComment}</if>
+        </set>
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据主键查询 -->
+    <select id="findById" resultMap="linkTableMap">
+        select *
+        from dl_link_table
+        where guid = #{guid}
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="findAll" resultMap="linkTableMap">
+        select *
+        from dl_link_table
+    </select>
+
+    <!-- 根据对象值查询重复个数 -->
+    <select id="findByCheck" resultType="Integer">
+        select count(1) from dl_link_table tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid != #{guid}</if>
+            <if test='null != tableName and "" != tableName'>and table_name = #{tableName}</if>
+            <if test='null != copyTableName and "" != copyTableName'>and copy_table_name = #{copyTableName}</if>
+            <if test='null != linkId and "" != linkId'>and link_id = #{linkId}</if>
+            <if test='null != type and "" != type'>and type = #{type}</if>
+            <if test='null != tableColumn and "" != tableColumn'>and table_column = #{tableColumn}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != tableComment and "" != tableComment'>and table_comment = #{tableComment}</if>
+        </where>
+    </select>
+
+    <!-- 根据对象值查询 -->
+    <select id="findByDomain" resultMap="linkTableMap">
+        select * from dl_link_table tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != tableName and "" != tableName'>and table_name = #{tableName}</if>
+            <if test='null != copyTableName and "" != copyTableName'>and copy_table_name = #{copyTableName}</if>
+            <if test='null != linkId and "" != linkId'>and link_id = #{linkId}</if>
+            <if test='null != type and "" != type'>and type = #{type}</if>
+            <if test='null != tableColumn and "" != tableColumn'>and table_column = #{tableColumn}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != tableComment and "" != tableComment'>and table_comment = #{tableComment}</if>
+        </where>
+    </select>
+
+    <!-- 分页查询方法 -->
+    <select id="findByGridRequest" resultMap="linkTableMap">
+        select
+        *
+        from dl_link_table tableAlins
+        <where>
+            <foreach item="item" index="key" collection="map2" open="" separator=" AND " close="">
+                <if test="key=='tableName'">
+                    tableAlins.table_name ilike '%${item}%'
+                </if>
+                <if test="key=='copyTableName'">
+                    tableAlins.copy_table_name ilike '%${item}%'
+                </if>
+                <if test="key=='tableColumn'">
+                    tableAlins.table_column ilike '%${item}%'
+                </if>
+                <if test="key=='optPerson'">
+                    tableAlins.opt_person ilike '%${item}%'
+                </if>
+                <if test="key=='comment'">
+                    tableAlins.table_comment ilike '%${tableComment}%'
+                </if>
+                <if test="key=='type'">
+                    tableAlins.type = #{item}
+                </if>
+                <if test="key == 'createTimeStart'">
+                    tablealins.create_time &gt;= '${item} 00:00:00'
+                </if>
+                <if test="key == 'createTimeEnd'">
+                    tablealins.create_time &lt;= '${item} 23:59:59'
+                </if>
+            </foreach>
+        </where>
+    </select>
+</mapper>

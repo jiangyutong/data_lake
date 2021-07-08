@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.base.dao.LoginLogDao">
+
+    <resultMap id="loginLogMap" type="com.boyoi.core.entity.LoginLog">
+        <id column="guid" property="guid"/>
+        <result column="login_name" property="loginName"/>
+        <result column="ipaddr" property="ipaddr"/>
+        <result column="login_location" property="loginLocation"/>
+        <result column="browser" property="browser"/>
+        <result column="os" property="os"/>
+        <result column="status" property="status"/>
+        <result column="msg" property="msg"/>
+        <result column="login_time" property="loginTime"/>
+
+    </resultMap>
+
+    <!-- 添加 -->
+    <insert id="add" parameterType="com.boyoi.core.entity.LoginLog">
+        insert into tsys_login_log
+        (guid,login_name,ipaddr,login_location,browser,os,status,msg,login_time)
+        values
+        (#{guid},#{loginName},#{ipaddr},#{loginLocation},#{browser},#{os},#{status},#{msg},#{loginTime})
+    </insert>
+
+    <!-- 批量添加 -->
+    <insert id="addBatch" parameterType="List">
+        insert into tsys_login_log
+        (guid,login_name,ipaddr,login_location,browser,os,status,msg,login_time)
+        values
+        <foreach collection="list" item="loginLog" index="index" separator=",">
+            (#{loginLog.guid},#{loginLog.loginName},#{loginLog.ipaddr},#{loginLog.loginLocation},#{loginLog.browser},#{loginLog.os},#{loginLog.status},#{loginLog.msg},#{loginLog.loginTime})
+        </foreach>
+    </insert>
+
+    <!-- 根据对象值删除 -->
+    <update id="del" parameterType="com.boyoi.core.entity.LoginLog">
+        update tsys_login_log set is_deleted = 'B'
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != loginName and "" != loginName'>and login_name = #{loginName}</if>
+            <if test='null != ipaddr and "" != ipaddr'>and ipaddr = #{ipaddr}</if>
+            <if test='null != loginLocation and "" != loginLocation'>and login_location = #{loginLocation}</if>
+            <if test='null != browser and "" != browser'>and browser = #{browser}</if>
+            <if test='null != os and "" != os'>and os = #{os}</if>
+            <if test='null != status and "" != status'>and status = #{status}</if>
+            <if test='null != msg and "" != msg'>and msg = #{msg}</if>
+            <if test='null != loginTime and "" != loginTime'>and login_time = #{loginTime}</if>
+        </where>
+    </update>
+
+    <!-- 根据ID批量删除 -->
+    <update id="delBatch" parameterType="List">
+        update tsys_login_log set is_deleted = 'B' where guid in (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #(item)
+        </foreach>
+        )
+    </update>
+
+    <!-- 修改 -->
+    <update id="update" parameterType="com.boyoi.core.entity.LoginLog">
+        update tsys_login_log
+        set
+        guid = #{guid},
+        login_name = #{loginName},
+        ipaddr = #{ipaddr},
+        login_location = #{loginLocation},
+        browser = #{browser},
+        os = #{os},
+        status = #{status},
+        msg = #{msg},
+        login_time = #{loginTime}
+
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据对象值修改 -->
+    <update id="updateByNotEmpty" parameterType="com.boyoi.core.entity.LoginLog">
+        update tsys_login_log
+        <set>
+            <if test='null != guid and "" != guid'>guid = #{guid},</if>
+            <if test='null != loginName and "" != loginName'>login_name = #{loginName},</if>
+            <if test='null != ipaddr and "" != ipaddr'>ipaddr = #{ipaddr},</if>
+            <if test='null != loginLocation and "" != loginLocation'>login_location = #{loginLocation},</if>
+            <if test='null != browser and "" != browser'>browser = #{browser},</if>
+            <if test='null != os and "" != os'>os = #{os},</if>
+            <if test='null != status and "" != status'>status = #{status},</if>
+            <if test='null != msg and "" != msg'>msg = #{msg},</if>
+            <if test='null != loginTime and "" != loginTime'>login_time = #{loginTime}</if>
+        </set>
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据主键查询 -->
+    <select id="findById" resultMap="loginLogMap">
+        select * from tsys_login_log where guid=#{guid}
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="findAll" resultMap="loginLogMap">
+        select * from tsys_login_log
+    </select>
+
+    <!-- 根据对象值查询重复个数 -->
+    <select id="findByCheck" resultType="Integer">
+        select count(1) from tsys_login_log tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid != #{guid}</if>
+            <if test='null != loginName and "" != loginName'>and login_name = #{loginName}</if>
+            <if test='null != ipaddr and "" != ipaddr'>and ipaddr = #{ipaddr}</if>
+            <if test='null != loginLocation and "" != loginLocation'>and login_location = #{loginLocation}</if>
+            <if test='null != browser and "" != browser'>and browser = #{browser}</if>
+            <if test='null != os and "" != os'>and os = #{os}</if>
+            <if test='null != status and "" != status'>and status = #{status}</if>
+            <if test='null != msg and "" != msg'>and msg = #{msg}</if>
+            <if test='null != loginTime and "" != loginTime'>and login_time = #{loginTime}</if>
+        </where>
+    </select>
+
+    <!-- 根据对象值查询 -->
+    <select id="findByDomain" resultMap="loginLogMap">
+        select * from tsys_login_log tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != loginName and "" != loginName'>and login_name = #{loginName}</if>
+            <if test='null != ipaddr and "" != ipaddr'>and ipaddr = #{ipaddr}</if>
+            <if test='null != loginLocation and "" != loginLocation'>and login_location = #{loginLocation}</if>
+            <if test='null != browser and "" != browser'>and browser = #{browser}</if>
+            <if test='null != os and "" != os'>and os = #{os}</if>
+            <if test='null != status and "" != status'>and status = #{status}</if>
+            <if test='null != msg and "" != msg'>and msg = #{msg}</if>
+            <if test='null != loginTime and "" != loginTime'>and login_time = #{loginTime}</if>
+        </where>
+    </select>
+
+    <!-- 分页查询方法 -->
+    <select id="findByGridRequest" resultMap="loginLogMap">
+        select
+        *
+        from tsys_login_log tableAlins
+        <where>
+            <foreach item="item" index="key" collection="map2" open="" separator=" AND " close="">
+                <if test="key=='loginName'">
+                    tableAlins.login_name ilike '%${item}%'
+                </if>
+                <if test="key=='ipaddr'">
+                    tableAlins.ipaddr ilike '%${item}%'
+                </if>
+                <if test="key=='loginLocation'">
+                    tableAlins.login_location ilike '%${item}%'
+                </if>
+                <if test="key=='status'">
+                    tableAlins.status = #{item}
+                </if>
+                <if test="key=='browser'">
+                    tableAlins.browser ilike '%${item}%'
+                </if>
+                <if test="key=='os'">
+                    tableAlins.os ilike '%${item}%'
+                </if>
+                <if test="key=='msg'">
+                    tableAlins.msg ilike '%${item}%'
+                </if>
+                <if test="key == 'loginTimeStart'">
+                    tablealins.login_time &gt;= '${item} 00:00:00'
+                </if>
+                <if test="key == 'loginTimeEnd'">
+                    tablealins.login_time &lt;= '${item} 23:59:59'
+                </if>
+            </foreach>
+        </where>
+    </select>
+</mapper>

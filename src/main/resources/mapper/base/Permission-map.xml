@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.base.dao.PermissionDao">
+
+    <resultMap id="permissionMap" type="com.boyoi.core.entity.Permission">
+        <id column="guid" property="guid"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="key" property="key"/>
+        <result column="opt_person" property="optPerson"/>
+        <result column="opt_time" property="optTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="sort" property="sort"/>
+        <result column="icon" property="icon"/>
+        <result column="type" property="type"/>
+        <collection property="instructions" ofType="com.boyoi.core.entity.Permission">
+            <id column="guid2" property="guid"/>
+            <result column="parent_id2" property="parentId"/>
+            <result column="name2" property="name"/>
+            <result column="key2" property="key"/>
+            <result column="opt_person2" property="optPerson"/>
+            <result column="opt_time2" property="optTime"/>
+            <result column="create_time2" property="createTime"/>
+            <result column="sort2" property="sort"/>
+            <result column="icon2" property="icon"/>
+            <result column="type2" property="type"/>
+        </collection>
+    </resultMap>
+
+    <!-- 添加 -->
+    <insert id="add" parameterType="com.boyoi.core.entity.Permission">
+        insert into tsys_permission
+        (guid,parent_id,name,key,opt_person,opt_time,create_time,sort,icon,type)
+        values
+        (#{guid},#{parentId},#{name},#{key},#{optPerson},#{optTime},#{createTime},#{sort},#{icon},#{type})
+    </insert>
+
+    <!-- 批量添加 -->
+    <insert id="addBatch" parameterType="List">
+        insert into tsys_permission
+        (guid,parent_id,name,key,opt_person,opt_time,create_time,sort,icon,type)
+        values
+        <foreach collection="list" item="permission" index="index" separator=",">
+            (#{permission.guid},#{permission.parentId},#{permission.name},#{permission.key},#{permission.optPerson},#{permission.optTime},#{permission.createTime},#{permission.sort},#{permission.icon},#{permission.type})
+        </foreach>
+    </insert>
+
+    <!-- 根据对象值删除 -->
+    <delete id="del" parameterType="com.boyoi.core.entity.Permission">
+        delete from tsys_permission
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != parentId and "" != parentId'>and parent_id = #{parentId}</if>
+            <if test='null != name and "" != name'>and name = #{name}</if>
+            <if test='null != key and "" != key'>and key = #{key}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != createTime'>and create_time = #{createTime}</if>
+            <if test='null != sort and "" != sort'>and sort = #{sort}</if>
+            <if test='null != icon and "" != icon'>and icon = #{icon}</if>
+            <if test='null != type and "" != type'>and type = #{type}</if>
+        </where>
+    </delete>
+
+    <!-- 根据ID批量删除 -->
+    <delete id="delBatch" parameterType="List">
+        delete from tsys_permission where guid in (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #(item)
+        </foreach>
+        )
+    </delete>
+
+    <!-- 修改 -->
+    <update id="update" parameterType="com.boyoi.core.entity.Permission">
+        update tsys_permission
+        set
+        guid = #{guid},
+        parent_id = #{parentId},
+        name = #{name},
+        key = #{key},
+        opt_person = #{optPerson},
+        opt_time = #{optTime},
+        create_time = #{createTime},
+        sort = #{sort},
+        icon = #{icon},
+        type = #{type}
+
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据对象值修改 -->
+    <update id="updateByNotEmpty" parameterType="com.boyoi.core.entity.Permission">
+        update tsys_permission
+        <set>
+            <if test='null != guid and "" != guid'>guid = #{guid},</if>
+            <if test='null != parentId and "" != parentId'>parent_id = #{parentId},</if>
+            <if test='null != name and "" != name'>name = #{name},</if>
+            <if test='null != key and "" != key'>key = #{key},</if>
+            <if test='null != optPerson and "" != optPerson'>opt_person = #{optPerson},</if>
+            <if test='null != optTime and "" != optTime'>opt_time = #{optTime},</if>
+            <if test='null != createTime and "" != createTime'>create_time = #{createTime},</if>
+            <if test='null != sort and "" != sort'>sort = #{sort},</if>
+            <if test='null != icon and "" != icon'>icon = #{icon},</if>
+            <if test='null != type and "" != type'>type = #{type}</if>
+        </set>
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据主键查询 -->
+    <select id="findById" resultMap="permissionMap">
+        select
+        parent.*,
+        children.guid guid2,
+        children.parent_id parent_id2,
+        children.name name2,
+        children.key key2,
+        children.opt_person opt_person2,
+        children.opt_time opt_time2,
+        children.create_time create_time2,
+        children.sort sort2,
+        children.icon icon2,
+        children.type type2
+        from tsys_permission parent
+        left join tsys_permission children on parent.guid = children.parent_id and children.type='1'
+        where parent.guid=#{guid}
+        order by children.sort asc
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="findAll" resultMap="permissionMap">
+        select * from tsys_permission order by sort asc
+    </select>
+
+    <!-- 根据对象值查询重复个数 -->
+    <select id="findByCheck" resultType="Integer">
+        select count(1) from tsys_permission tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid != #{guid}</if>
+            <if test='null != parentId and "" != parentId'>and parent_id = #{parentId}</if>
+            <if test='null != name and "" != name'>and name = #{name}</if>
+            <if test='null != key and "" != key'>and key = #{key}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != sort and "" != sort'>and sort = #{sort}</if>
+            <if test='null != icon and "" != icon'>and icon = #{icon}</if>
+            <if test='null != type and "" != type'>and type = #{type}</if>
+        </where>
+    </select>
+
+    <!-- 根据对象值查询 -->
+    <select id="findByDomain" resultMap="permissionMap">
+        select * from tsys_permission tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != parentId and "" != parentId'>and parent_id = #{parentId}</if>
+            <if test='null != name and "" != name'>and name = #{name}</if>
+            <if test='null != key and "" != key'>and key = #{key}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != sort and "" != sort'>and sort = #{sort}</if>
+            <if test='null != icon and "" != icon'>and icon = #{icon}</if>
+            <if test='null != type and "" != type'>and type = #{type}</if>
+        </where>
+    </select>
+
+    <!-- 分页查询方法 -->
+    <select id="findByGridRequest" resultMap="permissionMap">
+        select
+        tableAlins.*,
+        instruction.guid guid2,
+        instruction.parent_id parent_id2,
+        instruction.name name2,
+        instruction.key key2,
+        instruction.opt_person opt_person2,
+        instruction.opt_time opt_time2,
+        instruction.create_time create_time2,
+        instruction.sort sort2,
+        instruction.icon icon2,
+        instruction.type type2
+        from tsys_permission tableAlins
+        left join tsys_permission instruction on tableAlins.guid = instruction.parent_id and instruction.type='1'
+        where tableAlins.type='0'
+        order by tableAlins.sort,instruction.sort asc
+    </select>
+
+    <select id="findByRole" parameterType="String" resultMap="permissionMap">
+        SELECT
+        a.*
+        FROM
+        tsys_permission a
+        left join tsys_role_permission b
+        on a.guid = b.permission_id
+        WHERE
+        b.role_id = #{param1}
+        ORDER BY
+        sort
+    </select>
+
+    <select id="findByRoleId" parameterType="String" resultMap="permissionMap">
+        SELECT
+        *
+        FROM
+        tsys_permission a
+        left join tsys_role_permission b
+        on a.guid = b.permission_id
+        WHERE
+        b.role_id = #{roleId}
+        ORDER BY
+        sort
+    </select>
+
+    <select id="findPerByUser" parameterType="String" resultMap="permissionMap">
+        SELECT t2.*
+        FROM tsys_user_permission t1,tsys_permission t2
+        where t1.permission_id = t2.guid AND t1.user_id = #{param1} AND t2.type = '0' AND t2.parent_id != ''
+        order by t2.sort desc
+    </select>
+
+    <select id="findToRouter" resultMap="permissionMap">
+        select
+        tableAlins.*,
+        instruction.guid guid2,
+        instruction.parent_id parent_id2,
+        instruction.name name2,
+        instruction.key key2,
+        instruction.opt_person opt_person2,
+        instruction.opt_time opt_time2,
+        instruction.create_time create_time2,
+        instruction.sort sort2,
+        instruction.icon icon2,
+        instruction.type type2
+        from tsys_permission tableAlins
+        left join tsys_permission instruction on tableAlins.guid = instruction.parent_id and instruction.type='1'
+        left join tsys_user_permission up1 on tableAlins.guid = up1.permission_id
+        left join tsys_user_permission up on instruction.guid = up.permission_id
+        where tableAlins.type='0'
+        and up1.user_id = #{guid}
+        and up.user_id = #{guid}
+        order by tableAlins.sort,instruction.sort asc
+    </select>
+
+    <select id="findByUser" resultMap="permissionMap">
+        select
+        tableAlins.*,
+        instruction.guid guid2,
+        instruction.parent_id parent_id2,
+        instruction.name name2,
+        instruction.key key2,
+        instruction.opt_person opt_person2,
+        instruction.opt_time opt_time2,
+        instruction.create_time create_time2,
+        instruction.sort sort2,
+        instruction.icon icon2,
+        instruction.type type2
+        from tsys_permission tableAlins
+        left join tsys_permission instruction on tableAlins.guid = instruction.parent_id and instruction.type='1'
+        left join tsys_user_permission up1 on tableAlins.guid = up1.permission_id
+        left join tsys_user_permission up on instruction.guid = up.permission_id
+        where up1.user_id = #{guid}
+        and up.user_id = #{guid}
+        order by tableAlins.sort,instruction.sort asc
+    </select>
+
+    <select id="findByUserId" resultMap="permissionMap">
+        SELECT
+        a.*
+        FROM
+        tsys_permission a
+        left join tsys_user_permission b
+        on a.guid = b.permission_id
+        WHERE
+        b.user_id = #{ guid }
+        union all
+        SELECT
+        a.*
+        FROM
+        tsys_permission a
+        left join
+        tsys_role_permission b
+        on a.guid = b.permission_id
+        left join tsys_user_role c
+        on c.role_id = b.role_id
+        WHERE
+        c.user_id = #{ guid }
+    </select>
+</mapper>

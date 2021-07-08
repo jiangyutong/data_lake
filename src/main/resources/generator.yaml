@@ -1,0 +1,34 @@
+db:
+  #数据库地址 pastrue
+  url: jdbc:postgresql://122.112.165.39:5432/postgres
+  #数据库账号
+  username: postgres
+  #数据库密码
+  password: root
+#作者缩写
+author: fuwp
+#作者中文名
+authorZh: 付文攀
+#基础路径
+packageName: com.boyoi.work
+fileUrl: C:\\Users\\fuwp\\IdeaProjects\\data-lake-server\\src\\main
+#是否覆盖生成
+isCover: true
+path:
+  #controller路径
+  controller: controller
+  #service路径
+  service: service
+  #serviceImpl路径
+  interf: service.impl
+  #dao路径
+  dao: dao
+  #实体类路径
+  entity: entity
+  #mybatisXML文件路径
+  mapper: resources.mapper.work
+  #验证组文件路径
+  group: groups
+  #国际化资源文件路径
+#  message: resources.i18n
+

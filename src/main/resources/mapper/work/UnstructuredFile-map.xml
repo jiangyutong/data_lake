@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.work.dao.UnstructuredFileDao">
+
+    <resultMap id="unstructuredFileMap" type="com.boyoi.work.entity.UnstructuredFile">
+        <id column="guid" property="guid"/>
+        <result column="fsize" property="fsize"/>
+        <result column="faddress" property="faddress"/>
+        <result column="ftype" property="ftype"/>
+        <result column="time" property="time"/>
+        <result column="keywords" property="keywords"/>
+        <result column="opt_person" property="optPerson"/>
+        <result column="opt_time" property="optTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="opt_time_str" property="optTimeStr"/>
+        <result column="fname" property="fname"/>
+        <result column="is_deleted" property="isDeleted"/>
+
+    </resultMap>
+
+    <!-- 添加 -->
+    <insert id="add" parameterType="com.boyoi.work.entity.UnstructuredFile">
+        insert into unstructured_file
+        (guid,fsize,faddress,ftype,time,keywords,opt_person,opt_time,create_time,opt_time_str,fname,is_deleted)
+        values
+        (#{guid},#{fsize},#{faddress},#{ftype},#{time},#{keywords},#{optPerson},#{optTime},#{createTime},#{optTimeStr},#{fname},#{isDeleted})
+    </insert>
+
+    <!-- 批量添加 -->
+    <insert id="addBatch" parameterType="List">
+        insert into unstructured_file
+        (guid,fsize,faddress,ftype,time,keywords,opt_person,opt_time,create_time,opt_time_str,fname,is_deleted)
+        values
+        <foreach collection="list" item="unstructuredFile" index="index" separator=",">
+            (#{unstructuredFile.guid},#{unstructuredFile.fsize},#{unstructuredFile.faddress},#{unstructuredFile.ftype},#{unstructuredFile.time},#{unstructuredFile.keywords},#{unstructuredFile.optPerson},#{unstructuredFile.optTime},#{unstructuredFile.createTime},#{unstructuredFile.optTimeStr},#{unstructuredFile.fname},#{unstructuredFile.isDeleted})
+        </foreach>
+    </insert>
+
+    <!-- 根据对象值删除 -->
+    <update id="del" parameterType="com.boyoi.work.entity.UnstructuredFile">
+        update unstructured_file set is_deleted = 'B'
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != fsize and "" != fsize'>and fsize = #{fsize}</if>
+            <if test='null != faddress and "" != faddress'>and faddress = #{faddress}</if>
+            <if test='null != ftype and "" != ftype'>and ftype = #{ftype}</if>
+            <if test='null != time and "" != time'>and time = #{time}</if>
+            <if test='null != keywords and "" != keywords'>and keywords = #{keywords}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != optTimeStr and "" != optTimeStr'>and opt_time_str = #{optTimeStr}</if>
+            <if test='null != fname and "" != fname'>and fname = #{fname}</if>
+        </where>
+    </update>
+
+    <!-- 根据ID批量删除 -->
+    <update id="delBatch" parameterType="List">
+        update unstructured_file set is_deleted = 'B' where guid in (
+        <foreach collection="list" item="item" index="index" separator=",">
+            #(item)
+        </foreach>
+        )
+    </update>
+
+    <!-- 修改 -->
+    <update id="update" parameterType="com.boyoi.work.entity.UnstructuredFile">
+        update unstructured_file
+        set
+        guid = #{guid},
+        fsize = #{fsize},
+        faddress = #{faddress},
+        ftype = #{ftype},
+        time = #{time},
+        keywords = #{keywords},
+        opt_person = #{optPerson},
+        opt_time = #{optTime},
+        create_time = #{createTime},
+        opt_time_str = #{optTimeStr},
+        fname = #{fname}
+
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据对象值修改 -->
+    <update id="updateByNotEmpty" parameterType="com.boyoi.work.entity.UnstructuredFile">
+        update unstructured_file
+        <set>
+            <if test='null != guid and "" != guid'>guid = #{guid},</if>
+            <if test='null != fsize and "" != fsize'>fsize = #{fsize},</if>
+            <if test='null != faddress and "" != faddress'>faddress = #{faddress},</if>
+            <if test='null != ftype and "" != ftype'>ftype = #{ftype},</if>
+            <if test='null != time and "" != time'>time = #{time},</if>
+            <if test='null != keywords and "" != keywords'>keywords = #{keywords},</if>
+            <if test='null != optPerson and "" != optPerson'>opt_person = #{optPerson},</if>
+            <if test='null != optTime and "" != optTime'>opt_time = #{optTime},</if>
+            <if test='null != createTime and "" != createTime'>create_time = #{createTime},</if>
+            <if test='null != optTimeStr and "" != optTimeStr'>opt_time_str = #{optTimeStr},</if>
+            <if test='null != fname and "" != fname'>fname = #{fname}</if>
+            <if test='null != isDeleted and "" != isDeleted'>is_deleted = #{isDeleted}</if>
+        </set>
+        where guid=#{guid}
+    </update>
+
+    <!-- 根据主键查询 -->
+    <select id="findById" resultMap="unstructuredFileMap">
+        select * from unstructured_file where guid=#{guid}
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="findAll" resultMap="unstructuredFileMap">
+        select * from unstructured_file
+    </select>
+
+    <!-- 根据对象值查询重复个数 -->
+    <select id="findByCheck" resultType="Integer">
+        select count(1) from unstructured_file tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid != #{guid}</if>
+            <if test='null != fsize and "" != fsize'>and fsize = #{fsize}</if>
+            <if test='null != faddress and "" != faddress'>and faddress = #{faddress}</if>
+            <if test='null != ftype and "" != ftype'>and ftype = #{ftype}</if>
+            <if test='null != time and "" != time'>and time = #{time}</if>
+            <if test='null != keywords and "" != keywords'>and keywords = #{keywords}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != optTimeStr and "" != optTimeStr'>and opt_time_str = #{optTimeStr}</if>
+            <if test='null != fname and "" != fname'>and fname = #{fname}</if>
+        </where>
+    </select>
+
+    <!-- 根据对象值查询 -->
+    <select id="findByDomain" resultMap="unstructuredFileMap">
+        select * from unstructured_file tableAlias
+        <where>
+            <if test='null != guid and "" != guid'>and guid = #{guid}</if>
+            <if test='null != fsize and "" != fsize'>and fsize = #{fsize}</if>
+            <if test='null != faddress and "" != faddress'>and faddress = #{faddress}</if>
+            <if test='null != ftype and "" != ftype'>and ftype = #{ftype}</if>
+            <if test='null != time and "" != time'>and time = #{time}</if>
+            <if test='null != keywords and "" != keywords'>and keywords = #{keywords}</if>
+            <if test='null != optPerson and "" != optPerson'>and opt_person = #{optPerson}</if>
+            <if test='null != optTime and "" != optTime'>and opt_time = #{optTime}</if>
+            <if test='null != createTime and "" != createTime'>and create_time = #{createTime}</if>
+            <if test='null != optTimeStr and "" != optTimeStr'>and opt_time_str = #{optTimeStr}</if>
+            <if test='null != fname and "" != fname'>and fname = #{fname}</if>
+        </where>
+    </select>
+
+    <!-- 分页查询方法 -->
+    <select id="findByGridRequest" resultMap="unstructuredFileMap">
+        select
+        *
+        from unstructured_file tableAlins
+        <where>
+            is_deleted = 'A'
+            <foreach item="item" index="key" collection="map2" open="" separator=" " close="">
+                <if test="key=='fname'">
+                    and tableAlins.fname ilike '%${item}%'
+                </if>
+                <if test="key=='keywords'">
+                    and tableAlins.keywords ilike '%${item}%'
+                </if>
+                <if test="key=='ftype'">
+                    and tableAlins.ftype = #{item}
+                </if>
+                <if test="key=='optTimeStr'">
+                    and tableAlins.opt_time_str ilike '%${item}%'
+                </if>
+                <if test="key == 'createTimeStart'">
+                    and tablealins.create_time &gt;= '${item} 00:00:00'
+                </if>
+                <if test="key == 'createTimeEnd'">
+                    and tablealins.create_time &lt;= '${item} 23:59:59'
+                </if>
+            </foreach>
+        </where>
+    </select>
+    <select id="queryData" resultType="java.util.Map">
+        select ftype,count(*) sl from unstructured_file where is_deleted='A' GROUP BY ftype
+    </select>
+</mapper>

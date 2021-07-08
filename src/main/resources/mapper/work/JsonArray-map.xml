@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.boyoi.work.dao.JsonArrayServiceDao">
+
+
+    <!-- 批量添加addBatch -->
+    <!--    addBatch(@Param("tableName") String tableName, @Param("insertMap") Map insertMap);-->
+    <insert id="addBatch">
+        INSERT INTO ${tableName}(${lineColumn})
+        VALUES
+        <foreach collection="lineList" item="item" index="index" separator=",">
+            <foreach collection="item" index="key" item="_value" separator="," open="(" close=")">
+                #{_value}
+            </foreach>
+        </foreach>
+    </insert>
+</mapper>
